@@ -15,16 +15,22 @@ const connection = mysql.createConnection({
 connection.connect();
 
 exports.show = (req,res) => {
-  const id = req.params.id;
-  connection.query('select * from user where id = ?',[id],function(err,rows){
+  const username = req.params.username;
+  connection.query('select * from user where username = ?',[username],function(err,row){
     if(err){
       console.log("user show api error");
       throw err;
     }
     if(row.length!=0){
-      return res.status(200).json(row);
+      const user = {
+        id: row[0].id,
+        password: row[0].password,
+        username: row[0].username,
+        email: row[0].email
+      };
+      return res.status(200).json(user);
     }else{
-      return res.status(404).json({error: 'Unknown user'});
+      return res.status(404).send();
     }
   });
 }
@@ -48,31 +54,54 @@ exports.join = (req,res) => {
 exports.login = (req,res) => {
   const id = req.body.id;
   const password = req.body.password;
-  connection.query('select password from user where id = ?',[id],function(err, row){
+  connection.query('select * from user where id = ?',[id],function(err, row){
     if(err){
       console.log("user login api error");
       throw err;
     }
     if(row.length!=0){
       if(row[0].password==password){
-        return res.status(200).json({message:"login success"});
+        const user = {
+          id: row[0].id,
+          password: row[0].password,
+          username: row[0].username,
+          email: row[0].email
+        };
+        return res.status(200).json(user);
       }else{
-        return res.status(404).json({error:"password does not match"});
+        return res.status(404).send();
       }
     }else{
-      return res.status(404).json({error: 'Unknown user'});
+      return res.status(404).send();
     }
   })
 }
 
+/*
 exports.update = (req,res) => {
 
 }
+*/
 
+/*
 exports.modify = (req,res) => {
 
 }
+*/
 
+/*
 exports.destroy = (req,res) => {
-
+  const id = req.params.id;
+  connection.query('delete from user where id = ?',[id],function(err,result){
+    if(err){
+      console.log("user delete api error");
+      throw err;
+    }
+    if(result){
+      return res.status(204).send();
+    }else{
+      return res.status(400).send();
+    }
+  });
 }
+*/
