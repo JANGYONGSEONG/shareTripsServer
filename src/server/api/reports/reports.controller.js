@@ -26,23 +26,27 @@ exports.show = (req,res) => {
       throw err;
     }else{
       if(rows.length!=0){
+        const report = [];
 
-        const yy = rows[0].date.getFullYear();
-        const mm = rows[0].date.getMonth()+1;
-        const dd = rows[0].date.getDate();
+        rows.map((row,index)=>{
+          const yy = row.date.getFullYear();
+          const mm = row.date.getMonth()+1;
+          const dd = row.date.getDate();
 
-        const filePath = path.join(__dirname,"../../upload/"+rows[0].image_savename);
-        const fileName = rows[0].image_originname;
+          const filePath = path.join(__dirname,"../../upload/"+row.image_savename);
+          const fileName = row.image_originname;
 
-        const report = {
-          username: rows[0].writer,
-          title: rows[0].title,
-          imagePath: "test",
-          location: rows[0].location,
-          content: rows[0].content,
-          date: yy+"."+mm+"."+dd,
-          view: rows[0].view
-        }
+          report.push({
+            id: row.report_id,
+            username: row.writer,
+            title: row.title,
+            imagePath: "test",
+            location: row.location,
+            content: row.content,
+            date: yy+"."+mm+"."+dd,
+            view: row.view
+          });
+        });
 
         return res.status(200).json(report);
         //const fileStream = fs.createReadStream(filePath);
@@ -56,7 +60,8 @@ exports.show = (req,res) => {
 
 exports.image = (req,res) => {
   const username = req.params.username;
-  connection.query('select * from report where writer = ?',[username],function(err,rows){
+  const reportID = req.params.reportID;
+  connection.query('select * from report where writer = ? and report_id = ?',[username,reportID],function(err,rows){
     if(err){
       console.log("select report fail");
       throw err;
@@ -93,7 +98,7 @@ exports.upload = (req,res,next) => {
   const image_savename = req.file.filename+".jpg";
 
   const src = fs.createReadStream(image_savepath);
-  const dest = fs.createWriteStream(path.join(__dirname,'../../upload/'+image_savename+".jpg"));
+  const dest = fs.createWriteStream(path.join(__dirname,'../../upload/'+image_savename));
   src.pipe(dest);
   src.on('end',function(){console.log('complete')});
   src.on('error', function(err) {console.log('error')});

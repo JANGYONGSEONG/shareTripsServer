@@ -10,7 +10,7 @@ const upload = multer({dest:path.join(__dirname,'../../upload/')});
 
 router.get('/:username',controller.show);
 
-router.get('/images/:username',controller.image);
+router.get('/images/:username/:reportID',controller.image);
 
 router.post('/',upload.single('picture'),controller.upload);
 

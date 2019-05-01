@@ -15,8 +15,8 @@ const connection = mysql.createConnection({
 connection.connect();
 
 exports.show = (req,res) => {
-  const username = req.params.username;
-  connection.query('select * from user where username = ?',[username],function(err,row){
+  const id = req.params.id;
+  connection.query('select * from user where id = ?',[id],function(err,row){
     if(err){
       console.log("user show api error");
       throw err;
@@ -83,13 +83,41 @@ exports.update = (req,res) => {
 }
 */
 
-/*
-exports.modify = (req,res) => {
 
+exports.modifyUsername = (req,res) => {
+  console.log(req)
+
+  const id = req.params.id;
+  const username = req.body.username;
+
+  connection.query('update user set username = ? where id = ?',[username,id],function(err,result){
+    if(err){
+      throw err;
+    }
+    if(result){
+      return res.status(200).send();
+    }else{
+      return res.status(400).send();
+    }
+  });
 }
-*/
 
-/*
+exports.modifyEmail = (req,res) => {
+  const id = req.params.id;
+  const email = req.body.email;
+
+  connection.query('update user set email = ? where id = ?',[email,id],function(err,result){
+    if(err){
+      throw err;
+    }
+    if(result){
+      return res.status(200).send();
+    }else{
+      return res.status(400).send();
+    }
+  });
+}
+
 exports.destroy = (req,res) => {
   const id = req.params.id;
   connection.query('delete from user where id = ?',[id],function(err,result){
@@ -104,4 +132,3 @@ exports.destroy = (req,res) => {
     }
   });
 }
-*/
