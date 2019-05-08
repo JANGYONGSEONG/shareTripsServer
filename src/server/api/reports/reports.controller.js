@@ -19,7 +19,6 @@ connection.connect();
 
 exports.show = (req,res) => {
   const username = req.params.username;
-
   connection.query('select * from report where writer = ?',[username],function(err,rows){
     if(err){
       console.log("select report fail");
@@ -49,8 +48,70 @@ exports.show = (req,res) => {
         });
 
         return res.status(200).json(report);
-        //const fileStream = fs.createReadStream(filePath);
-        //fileStream.pipe(res);
+      }else{
+        return res.status(400).send();
+      }
+    }
+  });
+}
+
+exports.showAll = (req,res) => {
+  connection.query('select * from report',function(err,rows){
+    if(err){
+      console.log("select report fail");
+      throw err;
+    }else{
+      if(rows.length!=0){
+        const report = [];
+
+        rows.map((row,index)=>{
+          const yy = row.date.getFullYear();
+          const mm = row.date.getMonth()+1;
+          const dd = row.date.getDate();
+
+          const filePath = path.join(__dirname,"../../upload/"+row.image_savename);
+          const fileName = row.image_originname;
+
+          report.push({
+            id: row.report_id,
+            username: row.writer,
+            title: row.title,
+            imagePath: "test",
+            location: row.location,
+            content: row.content,
+            date: yy+"."+mm+"."+dd,
+            view: row.view
+          });
+        });
+
+        return res.status(200).json(report);
+      }else{
+        return res.status(400).send();
+      }
+    }
+  });
+}
+
+exports.userImage = (req,res) => {
+  const username = req.params.username;
+  const reportID = req.params.reportID;
+  connection.query('select * from report where writer = ? and report_id = ?',[username,reportID],function(err,rows){
+    if(err){
+      console.log("select report fail");
+      throw err;
+    }else{
+      if(rows.length!=0){
+
+        const filePath = path.join(__dirname,"../../upload/"+rows[0].image_savename);
+        const fileName = rows[0].image_originname;
+
+
+        res.writeHeader(200,{
+          "Content-Type": "image/jpeg",
+          "Content-Disposition": "attachment; filename=" + fileName
+        });
+        const filestream = fs.createReadStream(filePath);
+        filestream.pipe(res);
       }else{
         return res.status(400).send();
       }
@@ -59,9 +120,8 @@ exports.show = (req,res) => {
 }
 
 exports.image = (req,res) => {
-  const username = req.params.username;
   const reportID = req.params.reportID;
-  connection.query('select * from report where writer = ? and report_id = ?',[username,reportID],function(err,rows){
+  connection.query('select * from report where report_id = ?',[reportID],function(err,rows){
     if(err){
       console.log("select report fail");
       throw err;

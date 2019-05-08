@@ -24,6 +24,6 @@ module.exports = {
     ]
   },
   plugins: [
-    new ClenaWebpackPlugin([outputDirectory])
+    new CleanWebpackPlugin([outputDirectory])
   ]
 }
