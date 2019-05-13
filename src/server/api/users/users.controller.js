@@ -4,15 +4,36 @@ const bodyParser = MyApp.bodyParser;
 
 const mysql = require('mysql');
 
-const connection = mysql.createConnection({
+const dbConfig = {
   host: 'localhost',
   port: 3306,
   user: 'capstone',
   password: '123123',
   database: 'capstone'
-});
+};
 
-connection.connect();
+var connection;
+
+function handleDisconnect(){
+  connection = mysql.createConnection(dbConfig);
+  connection.connect( function onConnect(err){
+    if(err){
+        console.log('error when connecting to db:' , err);
+        setTimeout(handleDisconnect, 10000);
+    }
+  });
+
+  connection.on('error', function onError(err){
+    console.log('db error',err);
+    if(err.code == 'PROTOCOL_CONNECTION_LOST'){
+      handleDisconnect();
+    }else{
+      throw err;
+    }
+  });
+}
+
+handleDisconnect();
 
 exports.show = (req,res) => {
   const id = req.params.id;
