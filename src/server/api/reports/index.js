@@ -10,6 +10,8 @@ const upload = multer({dest:path.join(__dirname,'../../upload/')});
 
 router.get('/all',controller.showAll);
 
+router.get('/search', controller.search);
+
 router.get('/:username',controller.show);
 
 router.get('/images/:username/:reportID',controller.userImage);

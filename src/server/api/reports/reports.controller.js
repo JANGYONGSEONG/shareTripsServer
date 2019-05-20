@@ -113,6 +113,45 @@ exports.showAll = (req,res) => {
   });
 }
 
+exports.search = (req,res) => {
+  const keyword = req.query.keyword;
+  console.log(keyword);
+  connection.query('select * from report where title = ? or writer = ? or location = ? or content like ?',[keyword,keyword,'%'+keyword+'%','%'+keyword+'%'],function(err,rows){
+    if(err){
+      console.log("select keyword fail");
+      throw err;
+    }else{
+      if(rows.length!=0){
+        const report = [];
+
+        rows.map((row,index)=>{
+          const yy = row.date.getFullYear();
+          const mm = row.date.getMonth()+1;
+          const dd = row.date.getDate();
+
+          const filePath = path.join(__dirname,"../../upload/"+row.image_savename);
+          const fileName = row.image_originname;
+
+          report.push({
+            id: row.report_id,
+            username: row.writer,
+            title: row.title,
+            imagePath: "test",
+            location: row.location,
+            content: row.content,
+            date: yy+"."+mm+"."+dd,
+            view: row.view
+          });
+        });
+
+        return res.status(200).json(report);
+      }else{
+        return res.status(400).send();
+      }
+    }
+  });
+}
+
 exports.userImage = (req,res) => {
   const username = req.params.username;
   const reportID = req.params.reportID;
