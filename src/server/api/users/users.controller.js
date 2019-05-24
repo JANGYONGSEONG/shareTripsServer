@@ -47,7 +47,9 @@ exports.show = (req,res) => {
         id: row[0].id,
         password: row[0].password,
         username: row[0].username,
-        email: row[0].email
+        email: row[0].email,
+        theme: row[0].theme,
+        country: row[0].country
       };
       return res.status(200).json(user);
     }else{
@@ -86,7 +88,9 @@ exports.login = (req,res) => {
           id: row[0].id,
           password: row[0].password,
           username: row[0].username,
-          email: row[0].email
+          email: row[0].email,
+          theme: row[0].theme,
+          country: row[0].country
         };
         return res.status(200).json(user);
       }else{
@@ -95,15 +99,8 @@ exports.login = (req,res) => {
     }else{
       return res.status(404).send();
     }
-  })
+  });
 }
-
-/*
-exports.update = (req,res) => {
-
-}
-*/
-
 
 exports.modifyUsername = (req,res) => {
   console.log(req)
@@ -139,7 +136,49 @@ exports.modifyEmail = (req,res) => {
   });
 }
 
-exports.destroy = (req,res) => {
+exports.modifyTheme = (req,res) => {
+  const id = req.params.id;
+  let theme;
+  if(req.body.theme==='empty'){
+    theme = NULL;
+  }else{
+    theme = req.body.theme;
+  }
+
+  connection.query('update user set theme = ? where id = ?',[theme,id],function(err,result){
+    if(err){
+      throw err;
+    }
+    if(result){
+      return res.status(200).send();
+    }else{
+      return res.status(400).send();
+    }
+  });
+}
+
+exports.modifyCountry = (req,res) => {
+  const id = req.params.id;
+  let country;
+  if(req.body.country==='empty'){
+    country = NULL;
+  }else{
+    country = req.body.country;
+  }
+
+  connection.query('update user set country = ? where id = ?',[country,id],function(err,result){
+    if(err){
+      throw err;
+    }
+    if(result){
+      return res.status(200).send();
+    }else{
+      return res.status(400).send();
+    }
+  });
+}
+
+exports.deleteUser = (req,res) => {
   const id = req.params.id;
   connection.query('delete from user where id = ?',[id],function(err,result){
     if(err){

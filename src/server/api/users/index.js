@@ -13,6 +13,11 @@ router.patch('/:id/username',controller.modifyUsername);
 
 router.patch('/:id/email',controller.modifyEmail);
 
-router.delete('/:id',controller.destroy);
+router.patch('/:id/theme', controller.modifyTheme);
+
+router.patch('/:id/country', controller.modifyCountry);
+
+router.delete('/:id',controller.deleteUser);
+
 
 module.exports = router;
