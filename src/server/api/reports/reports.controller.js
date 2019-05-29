@@ -217,23 +217,63 @@ exports.upload = (req,res,next) => {
   const image_originname = req.file.originalname;
   const image_savename = req.file.filename+".jpg";
 
-  const src = fs.createReadStream(image_savepath);
-  const dest = fs.createWriteStream(path.join(__dirname,'../../upload/'+image_savename));
-  src.pipe(dest);
-  src.on('end',function(){console.log('complete')});
-  src.on('error', function(err) {console.log('error')});
-  fs.unlink(image_savepath,function(){
-    console.log("fs.unlink");
-  });
+  let client = new language.LanguageServiceClient();
 
+  const document = {
+    content: content,
+    type:'PLAIN_TEXT'
+  };
 
-  connection.query('insert into report(title,writer,location,content,image_originname,image_savename,image_path) values(?,?,?,?,?,?,?)',[title,writer,location,content,image_originname,image_savename,image_savepath],function(err,result){
-      if(err){
-        console.log("upload fail");
-        throw err;
-      }
+  client.
+    analyzeSentiment({document})
+    .then(results => {
+      const sentiment = results[0].documentSentiment;
+      console.log('Document sentiment:');
+      console.log('Score:'+ sentiment.score);
+      console.log(' Magnitude:'+ sentiment.magnitude);
+    })
+    .catch(err => {
+        console.log('ERROR:',err);
+    });
 
-      return res.status(200).json();
+  const tasks = [
+    function(callback){
+      const src = fs.createReadStream(image_savepath);
+      const dest = fs.createWriteStream(path.join(__dirname,'../../upload/'+image_savename));
+      src.pipe(dest);
+      src.on('end',function(){console.log('complete')});
+      src.on('error', function(err) {console.log('error')});
+      fs.unlink(image_savepath,function(){
+        console.log("fs.unlink");
+      });
+      callback(null);
+    },
+    function(callback){
+      connection.query('insert into report(title,writer,location,content,image_originname,image_savename,image_path) values(?,?,?,?,?,?,?)',[title,writer,location,content,image_originname,image_savename,image_savepath],function(err,result){
+          if(err){
+            console.log("upload fail");
+            throw err;
+          }
+          let client = new vision.ImageAnnotatorClient();
+          client
+            .labelDetection(path.join(__dirname,'../../upload/'+image_savename))
+            .then(results => {
+              const labels = results[0].labelAnnotations;
+              console.log(results);
+              console.log(labels);
+              labels.map(label=> console.log(label.description));
+            })
+            .catch(err => {
+              console.log('ERROR:',err);
+            });
+          return res.status(200).json();
+      });
+    }
+  ];
+
+  async.waterfall(tasks,function(err){
+    if(err)
+      throw err;
   });
 
 }

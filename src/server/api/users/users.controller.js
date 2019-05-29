@@ -65,7 +65,7 @@ exports.join = (req,res) => {
     username: req.body.username,
     email: req.body.email
   };
-  connection.query('insert into user values (?,?,?,?)',[user.id,user.password,user.username,user.email],function(err,result){
+  connection.query('insert into user(id,password,username,email) values (?,?,?,?)',[user.id,user.password,user.username,user.email],function(err,result){
     if(err){
       console.log("user create api error");
       throw err;
