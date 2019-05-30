@@ -12,6 +12,8 @@ router.get('/all',controller.showAll);
 
 router.get('/search', controller.search);
 
+router.get('/recommendation/:username', controller.recommend);
+
 router.get('/:username',controller.show);
 
 router.get('/images/:username/:reportID',controller.userImage);
