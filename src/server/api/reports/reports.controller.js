@@ -117,54 +117,60 @@ exports.recommend = (req,res) => {
   const username = req.params.username;
   const tasks = [
     function(callback){
-      connection.query('select username from user where (theme, country) in (select theme, country from user where username = ?) and username != ?', [username,username],function(err, rows){
+      connection.query('select username from user where username != ? and ((theme in (select theme from user where username = ?)) or (country in (select country from user where username = ?)))', [username,username,username],function(err, rows){
         if(err){
           console.log(err);
         }
         let users = [];
-        rows.map((row)=>{
-          users.push(row.username);
-        });
-        console.log(users);
-        callback(null,users);
+
+          rows.map((row)=>{
+            users.push(row.username);
+          });
+          console.log(users);
+          callback(null,users);
+
       });
     },
     function(users,callback){
-      connection.query('select * from report where writer in (?)',[users],function(err,rows){
-        if(err){
-          console.log("select report fail");
-          throw err;
-        }else{
-          console.log(rows);
-          if(rows.length!=0){
-            const report = [];
-
-            rows.map((row,index)=>{
-              const yy = row.date.getFullYear();
-              const mm = row.date.getMonth()+1;
-              const dd = row.date.getDate();
-
-              const filePath = path.join(__dirname,"../../upload/"+row.image_savename);
-              const fileName = row.image_originname;
-
-              report.push({
-                id: row.report_id,
-                username: row.writer,
-                title: row.title,
-                imagePath: "test",
-                location: row.location,
-                content: row.content,
-                date: yy+"."+mm+"."+dd,
-                view: row.view
-              });
-            });
-
-            return res.status(200).json(report);
+      if(users.length!==0){
+        connection.query('select * from report where writer in (?)',[users],function(err,rows){
+          if(err){
+            console.log("select report fail");
+            throw err;
           }else{
-            return res.status(400).send();
+            console.log(rows);
+            if(rows.length!=0){
+              const report = [];
+
+              rows.map((row,index)=>{
+                const yy = row.date.getFullYear();
+                const mm = row.date.getMonth()+1;
+                const dd = row.date.getDate();
+
+                const filePath = path.join(__dirname,"../../upload/"+row.image_savename);
+                const fileName = row.image_originname;
+
+                report.push({
+                  id: row.report_id,
+                  username: row.writer,
+                  title: row.title,
+                  imagePath: "test",
+                  location: row.location,
+                  content: row.content,
+                  date: yy+"."+mm+"."+dd,
+                  view: row.view
+                });
+              });
+
+              return res.status(200).json(report);
+            }else{
+              return res.status(400).send();
+            }
           }
-        }
-      });
+        });
+      }else{
+        return res.status(400).send();
+      }
     }
   ]
 
